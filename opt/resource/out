@@ -1,0 +1,72 @@
+#! /usr/bin/env python3
+
+from datetime import datetime
+from contextlib import contextmanager
+from email.mime.text import MIMEText
+import json
+import os
+from smtplib import SMTP
+import subprocess as sub
+import sys
+import time
+
+from common import get_payload
+
+
+def put(src):
+    print("Using dir {}".format(src), file=sys.stderr)
+    payload = get_payload()
+    subject = get_subject(payload)
+    message = get_message(payload)
+
+    message['Subject'] = subject
+    message['From'] = get_sender(payload)
+    message['To'] = get_recipients(payload)
+
+    with postfix():
+        with SMTP('localhost') as smtp:
+            smtp.send_message(message)
+            # This is lame, but it seems to take a while until postfix delivers the message
+            time.sleep(1)
+
+    print(json.dumps({
+        'version': {'version': datetime.isoformat(datetime.now())},
+        'metadata': [
+            {'name': 'subject', 'value': subject},
+        ]
+    }))
+
+
+def get_sender(payload):
+    return payload['source']['from']
+
+
+def get_recipients(payload):
+    return payload['params']['to']
+
+
+def get_subject(payload):
+    with open(payload['params']['subject']) as fp:
+        return fp.read()
+
+
+def get_message(payload):
+    with open(payload['params']['body']) as fp:
+        return MIMEText(fp.read())
+
+
+@contextmanager
+def postfix():
+    postfix_cmd('start')
+    yield
+    postfix_cmd('flush')
+    postfix_cmd('stop')
+
+
+def postfix_cmd(command):
+    devnull = open(os.devnull, 'w')
+    sub.check_call(['postfix', command], stdout=devnull, stderr=sub.STDOUT)
+
+
+if __name__ == '__main__':
+    put(sys.argv[1])
