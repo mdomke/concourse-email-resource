@@ -16,8 +16,8 @@ from common import get_payload
 def put(src):
     print("Using dir {}".format(src), file=sys.stderr)
     payload = get_payload()
-    subject = get_subject(payload)
-    message = get_message(payload)
+    subject = get_subject(src, payload)
+    message = get_message(src, payload)
 
     message['Subject'] = subject
     message['From'] = get_sender(payload)
@@ -45,14 +45,14 @@ def get_recipients(payload):
     return payload['params']['to']
 
 
-def get_subject(payload):
-    with open(payload['params']['subject']) as fp:
+def get_subject(src, payload):
+    with open(os.path.join(src, payload['params']['subject'])) as fp:
         subject = fp.read()
     return "Build #{}: {}".format(os.environ.get('BUILD_ID', 'X'), subject)
 
 
-def get_message(payload):
-    with open(payload['params']['body']) as fp:
+def get_message(src, payload):
+    with open(os.path.join(src, payload['params']['body'])) as fp:
         content = fp.read()
     content += "\n\nDetails: {}/builds/{}".format(os.environ.get('ATC_EXTERNAL_URL'),
                                                   os.environ.get('BUILD_ID'))
