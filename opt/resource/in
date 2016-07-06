@@ -4,8 +4,6 @@ import json
 import os
 import sys
 
-import requests
-
 from common import get_payload
 from common import get_version
 
