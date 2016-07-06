@@ -48,3 +48,6 @@ Sending an email message:
 
 * `subject`: A path to the file holding the email subject.
 * `body`: A path to the file holding the email body.
+
+The `subject` will be prepended with the build-id in the form "Build #XX" and the
+`body` will have a link to the build appended.

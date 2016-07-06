@@ -47,12 +47,16 @@ def get_recipients(payload):
 
 def get_subject(payload):
     with open(payload['params']['subject']) as fp:
-        return fp.read()
+        subject = fp.read()
+    return "Build #{}: {}".format(os.environ.get('BUILD_ID', 'X'), subject)
 
 
 def get_message(payload):
     with open(payload['params']['body']) as fp:
-        return MIMEText(fp.read())
+        content = fp.read()
+    content += "\n\nDetails: {}/builds/{}".format(os.environ.get('ATC_EXTERNAL_URL'),
+                                                  os.environ.get('BUILD_ID'))
+    return MIMEText(content)
 
 
 @contextmanager
