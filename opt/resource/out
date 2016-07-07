@@ -15,6 +15,8 @@ import time
 
 from jinja2 import Template
 
+from common import get_payload
+
 
 def put(src):
     print("Using dir {}".format(src), file=sys.stderr)
@@ -49,21 +51,15 @@ def put(src):
     }))
 
 
-def get_payload():
-    payload = json.load(sys.stdin)
-    _, fname = tempfile.mkstemp()
-    print("Logging payload to {}".format(fname), file=sys.stderr)
-    with open(fname, 'w') as fp:
-        fp.write(json.dumps(payload))
-    return payload
-
-
 def get_sender(payload):
     return get_value_from_payload(payload, 'source', 'from')
 
 
 def get_recipients(payload):
-    return get_value_from_payload(payload, 'params', 'to')
+    recipients = get_value_from_payload(payload, 'params', 'to')
+    if not isinstance(recipients, list):
+        raise ValueError("The recipients in params:to have to be a list!")
+    return recipients
 
 
 def get_mime_subtype(payload):
