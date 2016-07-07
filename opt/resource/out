@@ -2,26 +2,38 @@
 
 from datetime import datetime
 from contextlib import contextmanager
+from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+from html2text import html2text
 import json
 import os
 from smtplib import SMTP
 import subprocess as sub
 import sys
+import tempfile
 import time
 
-from common import get_payload
+from jinja2 import Template
 
 
 def put(src):
     print("Using dir {}".format(src), file=sys.stderr)
     payload = get_payload()
-    subject = get_subject(src, payload)
-    message = get_message(src, payload)
+    template_vars = get_template_vars(src, payload)
+    mime_subtype = get_mime_subtype(payload)
+    subject = get_subject(src, payload, template_vars)
+    body = get_message(src, payload, template_vars)
+
+    if mime_subtype == 'html':
+        message = MIMEMultipart('alternative')
+        message.attach(MIMEText(html2text(body), 'plain'))
+        message.attach(MIMEText(body, mime_subtype))
+    else:
+        message = MIMEText(body, mime_subtype)
 
     message['Subject'] = subject
     message['From'] = get_sender(payload)
-    message['To'] = get_recipients(payload)
+    message['To'] = ', '.join(get_recipients(payload))
 
     with postfix():
         with SMTP('localhost') as smtp:
@@ -37,26 +49,55 @@ def put(src):
     }))
 
 
+def get_payload():
+    payload = json.load(sys.stdin)
+    _, fname = tempfile.mkstemp()
+    print("Logging payload to {}".format(fname), file=sys.stderr)
+    with open(fname, 'w') as fp:
+        fp.write(json.dumps(payload))
+    return payload
+
+
 def get_sender(payload):
-    return payload['source']['from']
+    return get_value_from_payload(payload, 'source', 'from')
 
 
 def get_recipients(payload):
-    return payload['params']['to']
+    return get_value_from_payload(payload, 'params', 'to')
 
 
-def get_subject(src, payload):
-    with open(os.path.join(src, payload['params']['subject'])) as fp:
-        subject = fp.read()
-    return "Build #{}: {}".format(os.environ.get('BUILD_ID', 'X'), subject)
+def get_mime_subtype(payload):
+    return get_value_from_payload(payload, 'params', 'type', default='html', optional=True)
 
 
-def get_message(src, payload):
-    with open(os.path.join(src, payload['params']['body'])) as fp:
-        content = fp.read()
-    content += "\n\nDetails: {}/builds/{}".format(os.environ.get('ATC_EXTERNAL_URL'),
-                                                  os.environ.get('BUILD_ID'))
-    return MIMEText(content)
+def get_subject(src, payload, template_vars):
+    fname = get_value_from_payload(payload, 'params', 'subject')
+    with open(os.path.join(src, fname)) as fp:
+        return Template(fp.read()).render(template_vars)
+
+
+def get_message(src, payload, template_vars):
+    fname = get_value_from_payload(payload, 'params', 'body')
+    with open(os.path.join(src, fname)) as fp:
+        return Template(fp.read()).render(template_vars)
+
+
+def get_template_vars(src, payload):
+    fname = get_value_from_payload(payload, 'params', 'vars', optional=True)
+    template_vars = dict(os.environ)
+    if fname:
+        with open(os.path.join(src, fname)) as fp:
+            template_vars.update(json.load(fp))
+    return template_vars
+
+
+def get_value_from_payload(payload, section, key, default=None, optional=False):
+    try:
+        return payload[section][key]
+    except KeyError:
+        if not optional:
+            raise ValueError("Unable to extract '{}' from '{}'".format(key, section))
+    return default
 
 
 @contextmanager
@@ -73,4 +114,7 @@ def postfix_cmd(command):
 
 
 if __name__ == '__main__':
-    put(sys.argv[1])
+    try:
+        put(sys.argv[1])
+    except Exception as e:
+        print(str(e), file=sys.stderr, flush=True)

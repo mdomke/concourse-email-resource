@@ -46,8 +46,26 @@ Sending an email message:
 
 #### Parameters
 
-* `subject`: A path to the file holding the email subject.
-* `body`: A path to the file holding the email body.
+* `to`: _(mandatory)_ A list of recipients as strings.
+* `subject`: _(mandatory)_ A path to the file holding the email subject.
+* `body`: _(mandatory)_ A path to the file holding the email body.
+* `vars`: _(optional)_ A path to a JSON-file holding template vars.
+* `type`: _(optional)_ The MIME subtype (defaults to `"html"`)
 
-The `subject` will be prepended with the build-id in the form "Build #XX" and the
-`body` will have a link to the build appended.
+`subject` and `body` can both either be plain text, html or a [jinja](http://jinja.pocoo.org/docs/dev/)-template.
+In the latter case you can specify an additional file (`vars`) for holding template variables that should
+be rendered into the template. Additionally to the variables from the `vars`-file, all environment variables can
+be used in the template.
+
+A more elaborate usage example would look like this:
+
+```yaml
+- put: send-email
+  params:
+    to: recipient@example.com
+    subject: subject
+    body: body.html
+    vars: vars.json
+    type: html
+```
+
