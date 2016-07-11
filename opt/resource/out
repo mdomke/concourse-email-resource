@@ -10,9 +10,9 @@ import os
 from smtplib import SMTP
 import subprocess as sub
 import sys
-import tempfile
 import time
 
+from inlinestyler.utils import inline_css
 from jinja2 import Template
 
 from common import get_payload
@@ -74,8 +74,15 @@ def get_subject(src, payload, template_vars):
 
 def get_message(src, payload, template_vars):
     fname = get_value_from_payload(payload, 'params', 'body')
+    inline = get_value_from_payload(payload, 'params', 'inline_css', default=True, optional=True)
+    mime_subtype = get_mime_subtype(payload)
+
     with open(os.path.join(src, fname)) as fp:
-        return Template(fp.read()).render(template_vars)
+        message = Template(fp.read()).render(template_vars)
+
+    if mime_subtype == 'html' and inline:
+        message = inline_css(message)
+    return message
 
 
 def get_template_vars(src, payload):

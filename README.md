@@ -33,7 +33,7 @@ Sending an email message:
 ``` yaml
 - put: send-email
   params:
-    to: recipient@example.com
+    to: [recipient@example.com]
     subject: subject.txt
     body: body.txt
 ```
@@ -51,21 +51,33 @@ Sending an email message:
 * `body`: _(mandatory)_ A path to the file holding the email body.
 * `vars`: _(optional)_ A path to a JSON-file holding template vars.
 * `type`: _(optional)_ The MIME subtype (defaults to `"html"`)
+* `inline_css`: _(optional)_ Inline CSS to style attributes in HTML.
 
 `subject` and `body` can both either be plain text, html or a [jinja](http://jinja.pocoo.org/docs/dev/)-template.
 In the latter case you can specify an additional file (`vars`) for holding template variables that should
 be rendered into the template. Additionally to the variables from the `vars`-file, all environment variables can
-be used in the template.
+be used in the template (e.g.: ``BUILD_ID``). By default (if the MIME subtype is "html"), the CSS styles will be
+inlined to the HTML. If you don't want that, you can set the `inline_css` parameter to `False`.
 
 A more elaborate usage example would look like this:
 
 ```yaml
 - put: send-email
   params:
-    to: recipient@example.com
+    to: [recipient@example.com]
     subject: subject
     body: body.html
     vars: vars.json
-    type: html
+```
+
+or for a plain text example:
+
+```yaml
+- put: send-email
+  params:
+    to: [recipient@example.com]
+    subject: subject.txt
+    body: body.txt
+    type: plain
 ```
 
