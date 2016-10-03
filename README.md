@@ -47,7 +47,9 @@ Sending an email message:
 #### Parameters
 
 * `to`: _(mandatory)_ A list of recipients as strings.
+* `subject_text`: _(optional)_ Plain text email subject, instead of `subject`.
 * `subject`: _(mandatory)_ A path to the file holding the email subject.
+* `body_text`: _(optional)_ Plain text email body, instead of `body`.
 * `body`: _(mandatory)_ A path to the file holding the email body.
 * `vars`: _(optional)_ A path to a JSON-file holding template vars.
 * `type`: _(optional)_ The MIME subtype (defaults to `"html"`)
