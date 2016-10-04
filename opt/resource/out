@@ -67,23 +67,30 @@ def get_mime_subtype(payload):
 
 
 def get_subject(src, payload, template_vars):
-    fname = get_value_from_payload(payload, 'params', 'subject')
-    with open(os.path.join(src, fname)) as fp:
-        return Template(fp.read()).render(template_vars)
+    subject = get_value_from_payload(payload, 'params', 'subject_text', optional=True)
+    if not subject:
+        fname = get_value_from_payload(payload, 'params', 'subject')
+        with open(os.path.join(src, fname)) as fp:
+            subject = fp.read()
+            
+    return Template(subject).render(template_vars)
 
 
 def get_message(src, payload, template_vars):
-    fname = get_value_from_payload(payload, 'params', 'body')
+    message = get_value_from_payload(payload, 'params', 'body_text', optional=True)
+    if not message:
+        fname = get_value_from_payload(payload, 'params', 'body')
+        with open(os.path.join(src, fname)) as fp:
+            message = fp.read()
+
     inline = get_value_from_payload(payload, 'params', 'inline_css', default=True, optional=True)
     mime_subtype = get_mime_subtype(payload)
-
-    with open(os.path.join(src, fname)) as fp:
-        message = Template(fp.read()).render(template_vars)
+    message = Template(message).render(template_vars)
 
     if mime_subtype == 'html' and inline:
         message = inline_css(message)
+        
     return message
-
 
 def get_template_vars(src, payload):
     fname = get_value_from_payload(payload, 'params', 'vars', optional=True)
