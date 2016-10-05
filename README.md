@@ -53,11 +53,22 @@ Sending an email message:
 * `type`: _(optional)_ The MIME subtype (defaults to `"html"`)
 * `inline_css`: _(optional)_ Inline CSS to style attributes in HTML.
 
-`subject` and `body` can both either be plain text, html or a [jinja](http://jinja.pocoo.org/docs/dev/)-template.
+`subject|subject_text` and `body|body_text` can both either be plain text, html or a [jinja](http://jinja.pocoo.org/docs/dev/)-template.
 In the latter case you can specify an additional file (`vars`) for holding template variables that should
 be rendered into the template. Additionally to the variables from the `vars`-file, all environment variables can
 be used in the template (e.g.: ``BUILD_ID``). By default (if the MIME subtype is "html"), the CSS styles will be
 inlined to the HTML. If you don't want that, you can set the `inline_css` parameter to `False`.
+If you want to use jinja-template in `subject_text` or `body_text` you need to define the content as a multiline text, otherwise a syntax error will be reported for malformed yaml.
+
+``` yaml
+- put: send-email
+  params:
+    to: [recipient@example.com]
+    subject_text: |
+      {% block BUILD_PIPELINE_NAME %}{% endblock %}:{% block BUILD_JOB_NAME %}{% endblock %} failed
+    body_text: |
+      {% block BUILD_PIPELINE_NAME %}{% endblock %}:{% block BUILD_JOB_NAME %}{% endblock %} failed
+```
 
 A more elaborate usage example would look like this:
 
