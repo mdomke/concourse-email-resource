@@ -76,7 +76,6 @@ def get_subject(src, payload, template_vars):
         fname = get_value_from_payload(payload, 'params', 'subject')
         with open(os.path.join(src, fname)) as fp:
             subject = fp.read()
-            
     return Template(subject).render(template_vars)
 
 
@@ -93,7 +92,6 @@ def get_message(src, payload, template_vars):
 
     if mime_subtype == 'html' and inline:
         message = inline_css(message)
-        
     return message
 
 def get_template_vars(src, payload):
