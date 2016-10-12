@@ -46,7 +46,7 @@ Sending an email message:
 
 #### Parameters
 
-* `to`: _(mandatory)_ A list of recipients as strings.
+* `to|to_file`: _(mandatory)_ Use `to` to specify a list of recipients as strings or use `to_file` to cpecify file with addresses, each address should be in a new line.
 * `subject|subject_text`: _(mandatory)_ Use `subject` to specify a path to the file holding the email subject or use `subject_text` to specify a plain text subject.
 * `body|body_text`: _(mandatory)_ Use `body ` to specify a path to the file holding the email body or use `body_text` to specify a plain text email body.
 * `vars`: _(optional)_ A path to a JSON-file holding template vars.
