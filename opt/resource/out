@@ -60,11 +60,9 @@ def get_recipients(src, payload):
         fname = get_value_from_payload(payload, 'params', 'to_file')
         with open(os.path.join(src, fname)) as fp:
             recipients = fp.read().split('\n')
-        if not isinstance(recipients, list):
-            raise ValueError("The recipients in params:to_file have to be a list!")
-    else:
-        if not isinstance(recipients, list):
-            raise ValueError("The recipients in params:to have to be a list!")
+
+    if not isinstance(recipients, list):
+        raise ValueError("The recipients parameter has to be a list!")
     return recipients
 
 
