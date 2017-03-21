@@ -35,7 +35,7 @@ def put(src):
 
     message['Subject'] = subject
     message['From'] = get_sender(payload)
-    message['To'] = ', '.join(get_recipients(payload))
+    message['To'] = ', '.join(get_recipients(src, payload))
 
     with postfix():
         with SMTP('localhost') as smtp:
@@ -54,11 +54,15 @@ def put(src):
 def get_sender(payload):
     return get_value_from_payload(payload, 'source', 'from')
 
+def get_recipients(src, payload):
+    recipients = get_value_from_payload(payload, 'params', 'to', optional=True)
+    if not recipients:
+        fname = get_value_from_payload(payload, 'params', 'to_file')
+        with open(os.path.join(src, fname)) as fp:
+            recipients = fp.read().split('\n')
 
-def get_recipients(payload):
-    recipients = get_value_from_payload(payload, 'params', 'to')
     if not isinstance(recipients, list):
-        raise ValueError("The recipients in params:to have to be a list!")
+        raise ValueError("The recipients parameter has to be a list!")
     return recipients
 
 
