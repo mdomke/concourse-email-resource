@@ -6,6 +6,8 @@ install: true
 services:
   - docker
 
+script: true
+
 after_success:
   - if [ "$TRAVIS_BRANCH" == "master" ]; then
     docker build -t $TRAVIS_REPO_SLUG .;
