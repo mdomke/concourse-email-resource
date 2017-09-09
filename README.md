@@ -52,6 +52,7 @@ Sending an email message:
 * `vars`: _(optional)_ A path to a JSON-file holding template vars.
 * `type`: _(optional)_ The MIME subtype (defaults to `"html"`)
 * `inline_css`: _(optional)_ Inline CSS to style attributes in HTML.
+* `attachments`: A list of file names that will be attached to the email. Attachments only work if `type` is `"html"`.
 
 `subject|subject_text` and `body|body_text` can both either be plain text, html or a [jinja](http://jinja.pocoo.org/docs/dev/)-template.
 In the latter case you can specify an additional file (`vars`) for holding template variables that should

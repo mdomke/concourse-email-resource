@@ -2,6 +2,8 @@
 
 from datetime import datetime
 from contextlib import contextmanager
+from email import encoders
+from email.mime.base import MIMEBase
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from html2text import html2text
@@ -36,6 +38,7 @@ def put(src):
     message['Subject'] = subject
     message['From'] = get_sender(payload)
     message['To'] = ', '.join(get_recipients(src, payload))
+    add_attachments(message, payload)
 
     with postfix():
         with SMTP('localhost') as smtp:
@@ -64,6 +67,21 @@ def get_recipients(src, payload):
     if not isinstance(recipients, list):
         raise ValueError("The recipients parameter has to be a list!")
     return recipients
+
+
+def add_attachments(message, payload):
+    file_names = get_value_from_payload(payload, 'params', 'attachments', default=[], optional=True)
+    for file_name in file_names:
+        message.attach(get_attachment(file_name))
+
+
+def get_attachment(file_name):
+    attachment = MIMEBase('application', 'octet-stream')
+    with open(file_name) as fp:
+        attachment.set_payload(fp.read())
+    encoders.encode_base64(attachment)
+    attachment.add_header('Content-Disposition', 'attachment', filename=file_name)
+    return attachment
 
 
 def get_mime_subtype(payload):
