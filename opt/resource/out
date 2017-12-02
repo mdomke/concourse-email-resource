@@ -28,11 +28,11 @@ def put(src):
     subject = get_subject(src, payload, template_vars)
     body = get_message(src, payload, template_vars)
 
+    # https://stackoverflow.com/a/3984262/1883900
     message = MIMEMultipart('alternative')
+    message.attach(MIMEText(body, mime_subtype))
     if mime_subtype == 'html':
         message.attach(MIMEText(html2text(body), 'plain'))
-
-    message.attach(MIMEText(body, mime_subtype))
 
     message['Subject'] = subject
     message['From'] = get_sender(payload)
