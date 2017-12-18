@@ -6,6 +6,8 @@ A [Concourse CI](http://concourse.ci) resource to send emails.
 
 * `from`: *Required*. The email address of the sender as a string.
 
+* `host`: *Optional*. The smtp host to send from.
+
 ### Example
 
 Adding the resource to your project:
@@ -26,6 +28,7 @@ resources:
   type: email
   source:
     from: ci@example.com
+    host: smtp.example.com
 ```
 
 Sending an email message:
@@ -92,4 +95,3 @@ or for a plain text example:
     body: body.txt
     type: plain
 ```
-
