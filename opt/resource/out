@@ -41,7 +41,7 @@ def put(src):
     add_attachments(src, message, payload)
 
     with postfix():
-        with SMTP('localhost') as smtp:
+        with SMTP(get_host(payload)) as smtp:
             smtp.send_message(message)
             # This is lame, but it seems to take a while until postfix delivers the message
             time.sleep(1)
@@ -56,6 +56,9 @@ def put(src):
 
 def get_sender(payload):
     return get_value_from_payload(payload, 'source', 'from')
+
+def get_host(payload):
+    return get_value_from_payload(payload, 'source', 'host', default='localhost', optional=True)
 
 def get_recipients(src, payload):
     recipients = get_value_from_payload(payload, 'params', 'to', optional=True)
